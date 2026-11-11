@@ -1,9 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int INF = 1e9;
-
-
 class Input {
 public:
     int N;
@@ -70,11 +67,11 @@ public:
         cout << "All answers:\n";
         cout << answers.size() << "\n";
         for (const auto& answer : answers) {
-            cout << "[";
+            //cout << "[";
             for (int i = 0; i < (int)answer.size(); i++) {
-                cout << answer[i] << (i == (int)answer.size() - 1 ? "" : ", ");
+                //cout << answer[i] << (i == (int)answer.size() - 1 ? "" : ", ");
             }
-            cout << "]\n";
+            //cout << "]\n";
         }
     }
 
@@ -128,16 +125,6 @@ bool has_avoidance(Input& input, Information& information, int number) {
     return false;
 }
 
-bool can_put(Information& information, int number, int copy, int cur_pos) {
-    //check relative order of current copy
-    int lower = (information.prev_list[number] == 0? -INF: information.tableau[information.prev_list[number]-1][copy-1]);
-    int upper = (information.next_list[number] == 0? INF: information.tableau[information.next_list[number]-1][copy-1]);
-    if (cur_pos < lower || cur_pos > upper) {
-        return false;
-    }
-    return true;
-}
-
 void rec(Input& input, Information& information, Answer& answer, int number , int copy, int prev_copy_pos) {
     int N = input.N;
     int K = input.K;
@@ -180,9 +167,10 @@ void rec(Input& input, Information& information, Answer& answer, int number , in
             }
         }
     } else {
-        for (int i = prev_copy_pos + 1; i < min(N * K, prev_copy_pos + 1 + N); i++) {
+        int lower = (information.prev_list[number] == 0? -1: information.tableau[information.prev_list[number]-1][copy-1]);
+        int upper = (information.next_list[number] == 0? N * K: information.tableau[information.next_list[number]-1][copy-1]);
+        for (int i = max(prev_copy_pos, lower) + 1; i < min(N * K, upper); i++) {
             if (information.current_permutation[i] == -1) {
-                if (can_put(information, number, copy, i)) {
                     //update Information
                     information.current_permutation[i] = number;
                     information.tableau[number-1][copy-1] = i;
@@ -192,13 +180,13 @@ void rec(Input& input, Information& information, Answer& answer, int number , in
                     int next_copy = (copy == K? 1: copy+1);
                     int next_prev_copy_pos = (copy == K? -1: i);
 
-                    if (copy != K || (copy == K && !has_avoidance(input, information, number))) rec(input, information, answer, next_number, next_copy, next_prev_copy_pos);
-                    //rec(input, information, next_number, next_copy, next_prev_copy_pos);
+                    if (copy != K || (copy == K && !has_avoidance(input, information, number))) {
+                        rec(input, information, answer, next_number, next_copy, next_prev_copy_pos);
+                    }
 
                     //backtrack Information
                     information.tableau[number-1][copy-1] = -1;
                     information.current_permutation[i] = -1;
-                }
             }
         }
     }
